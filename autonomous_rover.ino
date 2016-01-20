@@ -7,16 +7,44 @@ const int echoPin  = 12;
 const int leftMotor []  = {4, 5};
 const int rightMotor [] = {6, 7};
 
-void sweep() { 
-  int pos = 0;
-  for(pos = 0; pos <= 180; pos += 10) {
-    servo.write(pos);
-    delay(100);
+long * distances180 = new long [5];
+long * distances360 = new long [8];
+
+void calibrateRover() {
+  distances360 = get360Distances();
+
+  for (int i = 0; i < 8; i++) {
+    Serial.print("Angle: ");
+    Serial.print(i * 45);
+    Serial.print("    Distance: ");
+    Serial.println(distances360[i]);
   }
-  for(pos = 180; pos >= 0; pos -= 10) {
-    servo.write(pos);
-    delay(100);
-  } 
+  
+//  int angle = maxIndex(distances360, 8) * 45;
+}
+
+long * get360Distances() {
+  int idx = 0;
+  long * distances = new long [8];
+  for (int i = 0; i <= 180; i += 45) {
+    servo.write(i);
+    distances[idx++] = getDistance();
+    delay(250);
+  }
+
+  right();
+  delay(450);
+  stop();
+  
+  for (int i = 180; i >= 45; i -= 45) {
+    servo.write(i);
+    distances[idx++] = getDistance();
+    delay(250);
+  }
+
+  servo.write(90);
+  
+  return distances;
 }
 
 long * get180Distances() {
@@ -49,6 +77,18 @@ long getDistance() {
   return (duration / 2) / 29.1; // travels distance twice, divide by 2
 }
 
+int maxIndex(long* arr, int size) {
+ int maxIndex = 0;
+ long max = arr[0];
+ for (int i = 1; i < size; i++) {
+   if (max < arr[i]){
+     max = arr[i];
+     maxIndex = i;
+   }
+ }
+ return maxIndex;
+}
+
 // ------ Motor Control -------- //
 void right() {
   digitalWrite(leftMotor[0], HIGH); 
@@ -78,6 +118,13 @@ void backward(){
   digitalWrite(rightMotor[1], HIGH); 
 }
 
+void stop() {
+  digitalWrite(leftMotor[0], LOW); 
+  digitalWrite(leftMotor[1], LOW); 
+  digitalWrite(rightMotor[0], LOW); 
+  digitalWrite(rightMotor[1], LOW); 
+}
+
 void setup() {
   Serial.begin(9600);
   servo.attach(servoPin);
@@ -87,6 +134,8 @@ void setup() {
     pinMode(leftMotor[i], OUTPUT);
     pinMode(rightMotor[i], OUTPUT);
   }
+
+  calibrateRover();
 }
 
 void loop() {
