@@ -4,6 +4,8 @@ Servo servo;
 const int servoPin = 10;
 const int trigPin  = 11;
 const int echoPin  = 12;
+const int leftMotor []  = {4, 5};
+const int rightMotor [] = {6, 7};
 
 void sweep() { 
   int pos = 0;
@@ -47,15 +49,47 @@ long getDistance() {
   return (duration / 2) / 29.1; // travels distance twice, divide by 2
 }
 
+// ------ Motor Control -------- //
+void right() {
+  digitalWrite(leftMotor[0], HIGH); 
+  digitalWrite(leftMotor[1], LOW); 
+  digitalWrite(rightMotor[0], HIGH); 
+  digitalWrite(rightMotor[1], LOW); 
+}
+
+void left(){
+  digitalWrite(leftMotor[0], LOW); 
+  digitalWrite(leftMotor[1], HIGH); 
+  digitalWrite(rightMotor[0], LOW); 
+  digitalWrite(rightMotor[1], HIGH); 
+}
+
+void forward(){
+  digitalWrite(leftMotor[0], LOW); 
+  digitalWrite(leftMotor[1], HIGH); 
+  digitalWrite(rightMotor[0], HIGH); 
+  digitalWrite(rightMotor[1], LOW);
+}
+
+void backward(){
+  digitalWrite(leftMotor[0], HIGH); 
+  digitalWrite(leftMotor[1], LOW); 
+  digitalWrite(rightMotor[0], LOW); 
+  digitalWrite(rightMotor[1], HIGH); 
+}
+
 void setup() {
   Serial.begin(9600);
   servo.attach(servoPin);
   pinMode(echoPin, INPUT);
   pinMode(trigPin, OUTPUT);
-
+  for (int i = 0; i < 2; i++){
+    pinMode(leftMotor[i], OUTPUT);
+    pinMode(rightMotor[i], OUTPUT);
+  }
 }
 
 void loop() {
-  long * distances = get180Distances();
+  
 }
 
