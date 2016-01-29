@@ -17,6 +17,8 @@ const int rearServoPin  = 11;
 const int rightServoPin = 12;
 const int leftServoPin  = 13;
 
+const int angleIndexTable[] = {0, 45, 90, 135, 180, -135, -90, -45};
+
 long * distances180 = new long [5];
 long * distances360 = new long [8];
 
@@ -134,7 +136,7 @@ void calibrateRover() {
     Serial.println(distances360[i]);
   }
 
-  int angle = maxIndex(distances360, 8) * 45;
+  int angle = angleIndexTable[maxIndex(distances360, 8)];
 
   mpuData = getMPUData();
   currentAngle = mpuData[0];
@@ -165,24 +167,20 @@ void calibrateRover() {
 long * get360Distances() {
   long * distances = new long [8];
 
-  for (rightPos = 0, leftPos = 180; rightPos <= 90, leftPos >= 90 ; rightPos += 45, leftPos -= 45) {
+  for (rightPos = 0, leftPos = 180, rearPos = 45; rightPos <= 90, leftPos >= 90, rearPos <= 135; rightPos += 45, leftPos -= 45, rearPos += 45) {
     leftServo.write(leftPos);
     rightServo.write(rightPos);
-    rearServo.write(rightPos); // rear servo does half a sweep using rightPos
+    rearServo.write(rearPos);
     if (leftPos == rightPos) {
         distances[2] = (getDistance(leftTrigPin, leftEchoPin + getDistance(rightTrigPin, rightEchoPin))) / 2;
     } else {
       distances[leftPos  / 45] = getDistance(leftTrigPin, leftEchoPin);
       distances[rightPos / 45] = getDistance(rightTrigPin, rightEchoPin);
     } 
-    delay(250);
-  }
-
-  for (rearPos = 135; rearPos <= 180; rearPos += 45) {
-    rearServo.write(rearPos);
     distances[(rearPos + 180) / 45] = getDistance(rearTrigPin, rearEchoPin);
     delay(250);
   }
+  return distances;
 }
 
 void getFrontDistances() {  
@@ -292,3 +290,4 @@ void loop() {
     return;
   }
 }
+
