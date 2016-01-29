@@ -3,11 +3,11 @@
 #include "I2Cdev.h"
 #include "MPU6050_6Axis_MotionApps20.h"
 
-const int leftMotor []  = {0, 1};
-const int rightMotor [] = {3, 4};
+const int leftMotor []  = {3, 4};
+const int rightMotor [] = {5, 6};
 
-const int rearTrigPin  = 5;
-const int rearEchoPin  = 6;
+const int rearTrigPin  = A0;
+const int rearEchoPin  = A1;
 const int rightTrigPin = 7;
 const int rightEchoPin = 8;
 const int leftTrigPin  = 9;
