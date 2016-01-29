@@ -142,22 +142,23 @@ void calibrateRover() {
   currentAngle = mpuData[0];
   Serial.print("Aiming towards: ");
   Serial.println(angle);
-  
-  if (angle == 180)
+
+  if (angle == 0)
     return;
   else if (angle > 0 && angle < 180) {
-    left();
-    while (currentAngle > angle + 5) {
-      mpuData = getMPUData();
-      currentAngle = mpuData[0];
-      Serial.println(currentAngle);
-    }
-  } else {
     right();
     while (currentAngle < angle - 5) {
       mpuData = getMPUData();
       currentAngle = mpuData[0];
       Serial.println(currentAngle);
+    }
+  }
+  else {
+    left();
+    while (currentAngle > angle + 5) {
+        mpuData = getMPUData();
+        currentAngle = mpuData[0];
+        Serial.println(currentAngle);
     }
   }
   
@@ -290,4 +291,3 @@ void loop() {
     return;
   }
 }
-
