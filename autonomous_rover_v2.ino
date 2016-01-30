@@ -227,23 +227,32 @@ void driveAndAvoid() {
     forward();
   } else if (frontDistances[0] >= SAFE_DISTANCE || frontDistances[2] >= SAFE_DISTANCE) {
     stop();
-    if (frontDistances[0] > frontDistances[2]) {
+    if (frontDistances[0] > frontDistances[2])
       left();
-      while (startingAngle - currentAngle < 40) {
-        mpuData = getMPUData();
-        currentAngle = mpuData[0];
-      }
-    } else {
+    else
       right();
-      while (currentAngle - startingAngle < 40) {
-        mpuData = getMPUData();
-        currentAngle = mpuData[0];
-      }
+    while (abs(startingAngle - currentAngle) < 40) {
+      mpuData = getMPUData();
+      currentAngle = mpuData[0];
     }
   } else {
     stop();
     rearDistances = getRearDistances();
-    // continue reverse and turn logic
+    if (rearDistances[2] >= SAFE_DISTANCE) {
+      backward();
+      while (frontDistances[1] < SAFE_DISTANCE) {
+       frontDistances = getFrontDistances();  
+      }
+      stop();
+    }
+    distances360 = get360Distances();
+    int angle = maxIndex(distances360, 8) * 45;
+    right();
+    while (startingAngle + abs(startingAngle - currentAngle) < angle) {
+      mpuData = getMPUData();
+      currentAngle = mpuData[0];
+    }
+    stop();
   }
 }
 
@@ -339,5 +348,5 @@ void loop() {
     stop();
     return;
   }
-  // driveAndAvoid();  
+  // driveAndAvoid(); 
 }
