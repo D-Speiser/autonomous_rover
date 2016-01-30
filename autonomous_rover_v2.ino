@@ -17,8 +17,13 @@ const int rearServoPin  = 11;
 const int rightServoPin = 12;
 const int leftServoPin  = 13;
 
+const int SAFE_DISTANCE = 100;
+const int STOP_DISTANCE = 25;
+
 const int angleIndexTable[] = {0, 45, 90, 135, 180, -135, -90, -45};
 
+long * frontDistances = new long [3];
+long * rearDistances = new long [5];
 long * distances180 = new long [5];
 long * distances360 = new long [8];
 
@@ -181,20 +186,64 @@ long * get360Distances() {
     distances[(rearPos + 180) / 45] = getDistance(rearTrigPin, rearEchoPin);
     delay(250);
   }
+  rearServo.write(90);
+  
   return distances;
 }
 
-void getFrontDistances() {  
-  for (rightPos = 0, leftPos = 180; rightPos <= 90, leftPos >= 90 ; rightPos += 45, leftPos -= 45) {
+long * getFrontDistances() {  
+  long * distances = new long [3];
+  for (rightPos = 45, leftPos = 135; rightPos <= 90, leftPos >= 90 ; rightPos += 45, leftPos -= 45) {
     leftServo.write(leftPos);
     rightServo.write(rightPos);
     if (leftPos == rightPos) {
-      distances180[2] = (getDistance(leftTrigPin, leftEchoPin + getDistance(rightTrigPin, rightEchoPin))) / 2;
+      distances[1] = (getDistance(leftTrigPin, leftEchoPin + getDistance(rightTrigPin, rightEchoPin))) / 2;
     } else {
-      distances180[leftPos  / 45] = getDistance(leftTrigPin, leftEchoPin);
-      distances180[rightPos / 45] = getDistance(rightTrigPin, rightEchoPin);
+      distances[(leftPos  / 45) - 1] = getDistance(leftTrigPin, leftEchoPin);
+      distances[(rightPos / 45) - 1] = getDistance(rightTrigPin, rightEchoPin);
     } 
     delay(250);
+  }
+  return distances;
+}
+
+long * getRearDistances() {  
+  long * distances = new long [5];
+  for (rearPos = 0; rearPos <= 180; rearPos += 45) {
+    rearServo.write(rearPos);
+    distances[rearPos  / 45] = getDistance(rearTrigPin, rearEchoPin);
+    delay(250);
+  }
+  return distances;
+}
+
+void driveAndAvoid() {
+  // crappy stop, turn, and go motion. TODO: add turn while driving to evade
+  frontDistances = getFrontDistances();
+  mpuData = getMPUData();
+  currentAngle = mpuData[0];
+  int startingAngle = currentAngle;
+  if (frontDistances[1] >= SAFE_DISTANCE) {
+    forward();
+  } else if (frontDistances[0] >= SAFE_DISTANCE || frontDistances[2] >= SAFE_DISTANCE) {
+    stop();
+    if (frontDistances[0] > frontDistances[2]) {
+      left();
+      while (startingAngle - currentAngle < 40) {
+        mpuData = getMPUData();
+        currentAngle = mpuData[0];
+      }
+    } else {
+      right();
+      while (currentAngle - startingAngle < 40) {
+        mpuData = getMPUData();
+        currentAngle = mpuData[0];
+      }
+    }
+  } else {
+    stop();
+    rearDistances = getRearDistances();
+    // continue reverse and turn logic
   }
 }
 
@@ -285,9 +334,10 @@ void setup() {
 }
 
 void loop() {
-  // if programming failed, don't try to do anything
+  // if programming of mpu failed, don't try to do anything
   if (!dmpReady) {
     stop();
     return;
   }
+  // driveAndAvoid();  
 }
