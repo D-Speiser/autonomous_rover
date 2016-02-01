@@ -1,6 +1,7 @@
 #include "Wire.h"
 #include <Servo.h> 
 #include "I2Cdev.h"
+#include <NewPing.h>
 #include "MPU6050_6Axis_MotionApps20.h"
 
 const int leftMotor []  = {3, 4};
@@ -12,6 +13,10 @@ const int rightTrigPin = 7;
 const int rightEchoPin = 8;
 const int leftTrigPin  = 9;
 const int leftEchoPin  = 10;
+const int MAX_DISTANCE = 200; // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
+NewPing rearSonar(rearTrigPin, rearEchoPin, MAX_DISTANCE); 
+NewPing rightSonar(rightTrigPin, rightEchoPin, MAX_DISTANCE);
+NewPing leftSonar(leftTrigPin, leftEchoPin, MAX_DISTANCE);
 
 const int rearServoPin  = 11;
 const int rightServoPin = 12;
