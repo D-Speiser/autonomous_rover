@@ -4,8 +4,8 @@
 #include <NewPing.h>
 #include "MPU6050_6Axis_MotionApps20.h"
 
-const int leftMotor []  = {3, 4};
-const int rightMotor [] = {5, 6};
+const int leftMotor []  = {3, 11}; // use PWM pins with same frequency as leftMotor
+const int rightMotor [] = {9, 10}; // use PWM pins with same frequency as rightMotor
 
 const int rearTrigPin  = 8;
 const int rearEchoPin  = 8;
@@ -273,32 +273,32 @@ int maxIndex(long* arr, int size) {
 }
 
 // ------ Motor Control -------- //
-void right() {
-  digitalWrite(leftMotor[0], HIGH); 
+void right(int speed = 255) {
+  analogWrite(leftMotor[0], speed); 
   digitalWrite(leftMotor[1], LOW); 
-  digitalWrite(rightMotor[0], HIGH); 
+  analogWrite(rightMotor[0], speed); 
   digitalWrite(rightMotor[1], LOW); 
 }
 
 void left(){
   digitalWrite(leftMotor[0], LOW); 
-  digitalWrite(leftMotor[1], HIGH); 
+  analogWrite(leftMotor[1], speed); 
   digitalWrite(rightMotor[0], LOW); 
-  digitalWrite(rightMotor[1], HIGH); 
+  analogWrite(rightMotor[1], speed); 
 }
 
 void forward(){
   digitalWrite(leftMotor[0], LOW); 
-  digitalWrite(leftMotor[1], HIGH); 
-  digitalWrite(rightMotor[0], HIGH); 
+  analogWrite(leftMotor[1], speed); 
+  analogWrite(rightMotor[0], speed); 
   digitalWrite(rightMotor[1], LOW);
 }
 
 void backward(){
-  digitalWrite(leftMotor[0], HIGH); 
+  analogWrite(leftMotor[0], speed); 
   digitalWrite(leftMotor[1], LOW); 
   digitalWrite(rightMotor[0], LOW); 
-  digitalWrite(rightMotor[1], HIGH); 
+  analogWrite(rightMotor[1], speed); 
 }
 
 void stop() {
