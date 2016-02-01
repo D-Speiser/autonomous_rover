@@ -7,16 +7,15 @@
 const int leftMotor []  = {3, 4};
 const int rightMotor [] = {5, 6};
 
-const int rearTrigPin  = A0;
-const int rearEchoPin  = A1;
-const int rightTrigPin = 7;
-const int rightEchoPin = 8;
-const int leftTrigPin  = 9;
-const int leftEchoPin  = 10;
-const int MAX_DISTANCE = 200; // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
-NewPing rearSonar(rearTrigPin, rearEchoPin, MAX_DISTANCE); 
-NewPing rightSonar(rightTrigPin, rightEchoPin, MAX_DISTANCE);
-NewPing leftSonar(leftTrigPin, leftEchoPin, MAX_DISTANCE);
+const int rearTrigPin  = 8;
+const int rearEchoPin  = 8;
+const int rightTrigPin = 12;
+const int rightEchoPin = 12;
+const int leftTrigPin  = 13;
+const int leftEchoPin  = 13;
+NewPing rearSonar(rearTrigPin, rearEchoPin); 
+NewPing rightSonar(rightTrigPin, rightEchoPin);
+NewPing leftSonar(leftTrigPin, leftEchoPin);
 
 const int rearServoPin  = 11;
 const int rightServoPin = 12;
@@ -183,12 +182,12 @@ long * get360Distances() {
     rightServo.write(rightPos);
     rearServo.write(rearPos);
     if (leftPos == rightPos) {
-        distances[2] = (getDistance(leftTrigPin, leftEchoPin + getDistance(rightTrigPin, rightEchoPin))) / 2;
+        distances[2] = (leftSonar.ping_cm() + rightSonar.ping_cm()) / 2;
     } else {
-      distances[leftPos  / 45] = getDistance(leftTrigPin, leftEchoPin);
-      distances[rightPos / 45] = getDistance(rightTrigPin, rightEchoPin);
+      distances[leftPos  / 45] = leftSonar.ping_cm();
+      distances[rightPos / 45] = rightSonar.ping_cm();
     } 
-    distances[(rearPos + 180) / 45] = getDistance(rearTrigPin, rearEchoPin);
+    distances[(rearPos + 180) / 45] = rearSonar.ping_cm();
     delay(250);
   }
   rearServo.write(90);
@@ -202,10 +201,10 @@ long * getFrontDistances() {
     leftServo.write(leftPos);
     rightServo.write(rightPos);
     if (leftPos == rightPos) {
-      distances[1] = (getDistance(leftTrigPin, leftEchoPin + getDistance(rightTrigPin, rightEchoPin))) / 2;
+      distances[1] = (leftSonar.ping_cm() + rightSonar.ping_cm()) / 2;
     } else {
-      distances[(leftPos  / 45) - 1] = getDistance(leftTrigPin, leftEchoPin);
-      distances[(rightPos / 45) - 1] = getDistance(rightTrigPin, rightEchoPin);
+      distances[(leftPos  / 45) - 1] = leftSonar.ping_cm();
+      distances[(rightPos / 45) - 1] = rightSonar.ping_cm();
     } 
     delay(250);
   }
@@ -216,7 +215,7 @@ long * getRearDistances() {
   long * distances = new long [5];
   for (rearPos = 0; rearPos <= 180; rearPos += 45) {
     rearServo.write(rearPos);
-    distances[rearPos  / 45] = getDistance(rearTrigPin, rearEchoPin);
+    distances[rearPos  / 45] = rearSonar.ping_cm();
     delay(250);
   }
   return distances;
@@ -259,23 +258,6 @@ void driveAndAvoid() {
     }
     stop();
   }
-}
-
-// returns distance in cm
-long getDistance(int trigPin, int echoPin) {
-  // The sensor is triggered by a HIGH pulse of 10 or more microseconds.
-  // Give a short LOW pulse beforehand to ensure a clean HIGH pulse:
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(5);
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
-  // Read the signal from the sensor: a HIGH pulse whose
-  // duration is the time (in microseconds) from the sending
-  // of the ping to the reception of its echo off of an object.
-  long duration = pulseIn(echoPin, HIGH);
-  // convert duration to cm 
-  return (duration / 2) / 29.1; // travels distance twice, divide by 2
 }
 
 int maxIndex(long* arr, int size) {
